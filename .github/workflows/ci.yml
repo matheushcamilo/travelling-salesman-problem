@@ -1,0 +1,51 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches-ignore:
+      - master
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
+
+jobs:
+  code-quality:
+    name: Code Smell Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install flake8
+
+      - name: Run Flake8 (Code Smell Check)
+        run: flake8 --max-line-length=100 --exclude=venv
+
+  tests:
+    name: Run Test Suite
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install pytest
+
+      - name: Run Tests
+        run: pytest --disable-warnings --maxfail=3 --tb=short
